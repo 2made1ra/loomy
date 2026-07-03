@@ -1,5 +1,4 @@
 import unittest
-from pydoc import html
 
 from textnode import TextNode, TextType, text_node_to_html_node
 
@@ -20,7 +19,7 @@ class TestTextNode(unittest.TestCase):
         self.assertIsNotNone(node.url)
 
 
-class TestTextToLeaf(unittest.TestCase):
+class TestTextToHtml(unittest.TestCase):
     def test_text(self):
         node = TextNode("This is a text node", TextType.TEXT)
         html_node = text_node_to_html_node(node)

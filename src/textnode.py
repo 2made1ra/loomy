@@ -15,7 +15,7 @@ class TextType(Enum):
 class TextNode:
     def __init__(self, text: str, text_type: TextType, url: str | None = None) -> None:
         self.text = text
-        self.text_type = text_type
+        self.type = text_type
         self.url = url
 
     def __eq__(self, other: object) -> bool:
@@ -23,20 +23,20 @@ class TextNode:
             return False
         return (
             self.text == other.text
-            and self.text_type == other.text_type
+            and self.type == other.type
             and self.url == other.url
         )
 
     def __repr__(self) -> str:
-        return f"TextNode({self.text}, {self.text_type.value}, {self.url})"
+        return f"TextNode({self.text}, {self.type.value}, {self.url})"
 
 
 def text_node_to_html_node(text_node: TextNode) -> LeafNode:
-    if not isinstance(text_node.text_type, TextType):
+    if not isinstance(text_node.type, TextType):
         raise TypeError(
-            f"{text_node.text_type} is not supported text type. Check supported type in {TextType}"
+            f"{text_node.type} is not supported text type. Check supported type in {TextType}"
         )
-    match text_node.text_type:
+    match text_node.type:
         case TextType.TEXT:
             return LeafNode(None, text_node.text)
         case TextType.BOLD:
