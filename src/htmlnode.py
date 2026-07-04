@@ -1,6 +1,3 @@
-from multiprocessing import Value
-
-
 class HTMLNode:
     def __init__(
         self,

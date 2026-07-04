@@ -1,6 +1,7 @@
 import re
 from collections.abc import Callable
 
+from src.block_type import BlockType, block_to_block_type, markdown_to_blocks
 from src.textnode import TextNode, TextType
 
 
@@ -96,3 +97,11 @@ def text_to_textnodes(raw_text: str) -> list[TextNode]:
     text_nodes = split_nodes_link(text_nodes)
 
     return text_nodes
+
+
+def extract_title(markdown: str) -> str:
+    title = markdown_to_blocks(markdown)[0]
+    if block_to_block_type(title) == BlockType.HEADING and title.startswith("# "):
+        return title.removeprefix("# ")
+    else:
+        raise Exception("Cannot find H1 title in this text.")

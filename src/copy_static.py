@@ -4,7 +4,7 @@ import shutil
 
 def clear_directory(path: str) -> None:
     for entry in os.scandir(path):
-        if os.path.isfile(entry.path):
+        if entry.is_file():
             os.remove(entry.path)
         else:
             shutil.rmtree(entry.path)
