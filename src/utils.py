@@ -82,3 +82,17 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
     return _split_nodes_by_pattern(
         old_nodes, extract_markdown_links, lambda x, y: f"[{x}]({y})", TextType.LINK
     )
+
+
+def text_to_textnodes(raw_text: str) -> list[TextNode]:
+    node = TextNode(raw_text, TextType.TEXT)
+    text_nodes: list[TextNode] = [node]
+    delimiters = {"**": TextType.BOLD, "_": TextType.ITALIC, "`": TextType.CODE}
+
+    for key, value in delimiters.items():
+        text_nodes = split_nodes_delimiter(text_nodes, key, value)
+
+    text_nodes = split_nodes_image(text_nodes)
+    text_nodes = split_nodes_link(text_nodes)
+
+    return text_nodes

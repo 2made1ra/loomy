@@ -1,4 +1,5 @@
 import unittest
+from statistics import correlation
 
 from src.textnode import TextNode, TextType
 from src.utils import (
@@ -7,6 +8,7 @@ from src.utils import (
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
+    text_to_textnodes,
 )
 
 
@@ -185,3 +187,118 @@ class TestSplitNodeLinks(unittest.TestCase):
             ],
             new_nodes,
         )
+
+
+class TestTextToNode(unittest.TestCase):
+    def test_split_text(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        correct_answer = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode(
+                "obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"
+            ),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_plain_text(self):
+        text = "just plain text, nothing special"
+        correct_answer = [TextNode("just plain text, nothing special", TextType.TEXT)]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_empty_string(self):
+        text = ""
+        correct_answer = []
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_only_bold(self):
+        text = "**bold only**"
+        correct_answer = [TextNode("bold only", TextType.BOLD)]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_only_italic(self):
+        text = "_italic only_"
+        correct_answer = [TextNode("italic only", TextType.ITALIC)]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_only_code(self):
+        text = "`code only`"
+        correct_answer = [TextNode("code only", TextType.CODE)]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_only_image(self):
+        text = "![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg)"
+        correct_answer = [
+            TextNode(
+                "obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"
+            )
+        ]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_only_link(self):
+        text = "[link](https://boot.dev)"
+        correct_answer = [TextNode("link", TextType.LINK, "https://boot.dev")]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_multiple_bold(self):
+        text = "**one** and **two**"
+        correct_answer = [
+            TextNode("one", TextType.BOLD),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("two", TextType.BOLD),
+        ]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_bold_and_italic_combo(self):
+        text = "**bold** and _italic_ together"
+        correct_answer = [
+            TextNode("bold", TextType.BOLD),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" together", TextType.TEXT),
+        ]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_multiple_images_and_links(self):
+        text = "![one](https://a.com/1.png) and [link](https://boot.dev) and ![two](https://a.com/2.png)"
+        correct_answer = [
+            TextNode("one", TextType.IMAGE, "https://a.com/1.png"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("two", TextType.IMAGE, "https://a.com/2.png"),
+        ]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
+
+    def test_unmatched_delimiter_raises(self):
+        text = "This is **unmatched bold"
+        with self.assertRaises(Exception):
+            text_to_textnodes(text)
+
+    def test_inlined_delimeters(self):
+        text = "This is **__inlined__** text!"
+        correct_answer = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("__inlined__", TextType.BOLD),
+            TextNode(" text!", TextType.TEXT),
+        ]
+        testing_answer = text_to_textnodes(text)
+        self.assertEqual(testing_answer, correct_answer)
