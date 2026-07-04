@@ -1,4 +1,5 @@
 import re
+from collections.abc import Callable
 
 from src.textnode import TextNode, TextType
 
@@ -39,3 +40,45 @@ def extract_markdown_images(raw_md_text: str) -> list[tuple[str, str]]:
 
 def extract_markdown_links(raw_md_text: str) -> list[tuple[str, str]]:
     return re.findall(r"(?<!!)\[([^\[\]]*)]\(([^\(\)]*)\)", raw_md_text)
+
+
+def _split_nodes_by_pattern(
+    old_nodes: list[TextNode],
+    extractor: Callable[[str], list[tuple[str, str]]],
+    pattern_matcher: Callable[[str, str], str],
+    type: TextType,
+) -> list[TextNode]:
+    new_nodes: list[TextNode] = []
+    for node in old_nodes:
+        if node.type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+        text = node.text
+        entities = extractor(text)
+        if not entities:
+            new_nodes.append(node)
+            continue
+
+        for label, url in entities:
+            before, remaining_text = text.split(pattern_matcher(label, url), 1)
+            if before != "":
+                new_nodes.append(TextNode(before, TextType.TEXT))
+            new_nodes.append(TextNode(label, type, url))
+            text = remaining_text
+
+        if text != "":
+            new_nodes.append(TextNode(text, TextType.TEXT))
+
+    return new_nodes
+
+
+def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
+    return _split_nodes_by_pattern(
+        old_nodes, extract_markdown_images, lambda x, y: f"![{x}]({y})", TextType.IMAGE
+    )
+
+
+def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
+    return _split_nodes_by_pattern(
+        old_nodes, extract_markdown_links, lambda x, y: f"[{x}]({y})", TextType.LINK
+    )
