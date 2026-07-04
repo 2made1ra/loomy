@@ -10,12 +10,7 @@ def clear_directory(path: str) -> None:
             shutil.rmtree(entry.path)
 
 
-def copy_static():
-    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-    src = os.path.join(SCRIPT_DIR, "..", "static")
-    dst = os.path.join(SCRIPT_DIR, "..", "public")
+def copy_static(src, dst):
     clear_directory(dst)
-
     shutil.copytree(src, dst, dirs_exist_ok=True)
-
-    print("Files was copied to public!")
+    print("Files was copied to docs!")
