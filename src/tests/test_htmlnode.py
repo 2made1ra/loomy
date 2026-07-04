@@ -83,7 +83,7 @@ class TestParentNode(unittest.TestCase):
         )
 
     def test_to_html_children_error(self):
-        child_node = LeafNode("b", "")
+        child_node = LeafNode("b", None)
         parent_node = ParentNode("div", [child_node])
         self.assertRaises(ValueError, parent_node.to_html)
 
